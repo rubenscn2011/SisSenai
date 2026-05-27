@@ -27,7 +27,7 @@
         </form>
       </div>
       <div class="card"style="margin-top:20px;">
-        <he>Clientes Cadastrados</he>
+        <h2>Clientes Cadastrados</h2>
         <table>
           <thead>
             <tr>
@@ -47,12 +47,12 @@
       .then(clientes=>{
         const corpoTabela=document.getElementByld('list-clientes');
         clientes.forEach(c=>{
-          corpoTabela.innerHTML +=
+          corpoTabela.innerHTML +=`
             <tr>
             <td>${c.nome}</td>
             <td>${c.cpf}</td>
             <td>${c.telefone}</td>
-        </tr>;
+        </tr>`;
       });
     });
    </script>
