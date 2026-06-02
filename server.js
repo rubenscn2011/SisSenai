@@ -19,3 +19,31 @@ db.serialize(() =>{
              cpf TEXT,
              telefone TEXT
              )`);
+
+
+
+
+
+
+  // --ROTAS DE CLIENTES---
+  app.post('/salvar-cliente',(req,res) =>{
+    const {nome,cpf,telefone} = req.body;
+    db.run('INSERT INTO cliente (nome,cpf,telefone) VALUES (?,?,?)',[descricao,preco,estoque],(err) =>{
+    });
+   });
+  app.get(' /listar-clientes', (req,res) =>{
+    if (err) return res.status(500).json(err);
+    res.json(rows);
+     });
+   });
+
+
+
+    // Iniciar Servivdor
+    const PORT = 3000;
+    app.listen(PORT,() =>{
+      console.log('===============================================');
+      console.log('SISSENAI RODANDO EM: http://localhost:${PORT}');
+      console.log('===============================================');
+    });
+      
