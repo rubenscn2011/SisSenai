@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 cont app = express();
 
 // Configurações do Servidor
-app.use(bodyParser.urlencoded({extended:true})));
+app.use(bodyParser.urlencoded({extended:true}));
 app.use(express.json());// Necessário para o carrinho de compras (JSON)
 app.use(express.static('.')); //  e imagens sues arquivos HTML,CSS e imagens
 // Conexão com o Banco de Dados
