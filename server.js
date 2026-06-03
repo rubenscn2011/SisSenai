@@ -12,7 +12,7 @@ const db = new sqlite3.Database('./sissenai.db');
 
 // Inicialização das Tabelas (Cria apenas se não existirem)
 db.serialize(() =>{ 
-  //Tabela de Clientes
+  // Tabela de Clientes
              db.run(`CREATE TABLE IF NOT EXISTS clientes (
              id INTEGER PRIMARY KEY AUTOINCREMENT,
              nome TEXT,
