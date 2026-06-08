@@ -53,7 +53,7 @@ db.serialize(() => {
 // --- ROTAS DE CLIENTES ---
 app.post('/salvar-cliente', (req, res) => {
     const { nome, cpf, telefone } = req.body;
-    db.run(`INSERT INTO clientes (nome, cpf, telefone) VALUES (?, ?, ?)`, [nome, cpf, telefone], (err) => {
+    db.run(INSERT INTO clientes (nome, cpf, telefone) VALUES (?, ?, ?), [nome, cpf, telefone], (err) => {
         if (err) return res.status(500).send(err.message);
         res.redirect('/clientes.html');
     });
@@ -69,7 +69,7 @@ app.get('/listar-clientes', (req, res) => {
 // --- ROTAS DE PRODUTOS (ESTOQUE) ---
 app.post('/salvar-produto', (req, res) => {
     const { descricao, preco, estoque } = req.body;
-    db.run(`INSERT INTO produtos (descricao, preco, estoque) VALUES (?, ?, ?)`, [descricao, preco, estoque], (err) => {
+    db.run(INSERT INTO produtos (descricao, preco, estoque) VALUES (?, ?, ?), [descricao, preco, estoque], (err) => {
         if (err) return res.status(500).send(err.message);
         res.redirect('/produtos.html');
     });
@@ -89,11 +89,11 @@ app.post('/finalizar-venda', (req, res) => {
     const { cliente_id, total, itens } = req.body;
     const data = new Date().toLocaleString('pt-BR');
 
-    db.run(`INSERT INTO vendas (cliente_id, data, total) VALUES (?, ?, ?)`, [cliente_id, data, total], function (err) {
+    db.run(INSERT INTO vendas (cliente_id, data, total) VALUES (?, ?, ?), [cliente_id, data, total], function (err) {
         if (err) return res.status(500).json(err);
 
         const vendaId = this.lastID;
-        const stmt = db.prepare(`INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)`);
+        const stmt = db.prepare(INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?));
 
         //itens.forEach(item => {
         //    stmt.run(vendaId, item.id, item.qtd, item.preco);
@@ -156,7 +156,7 @@ app.get('/detalhes-venda/:id', (req, res) => {
 // Iniciar Servidor
 const PORT = 3000;
 app.listen(PORT, () => {
-    console.log(`=========================================`);
-    console.log(`SISSENAI RODANDO EM: http://localhost:${PORT}`);
-    console.log(`=========================================`);
+    console.log(=========================================);
+    console.log(SISSENAI RODANDO EM: http://localhost:${PORT});
+    console.log(=========================================);
 });
