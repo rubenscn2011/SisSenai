@@ -58,12 +58,22 @@
             <button onclick="prepararEdicao(${c.id},'${c.nome}','${c.cpf}',${c.telefone}')"
             style="width:auto;background:orange;padding:5px 10px;margin-right:5px;">✏️</button>
             <button onclick="excluirCliente(${c.id})"
-            stule="windth:auto;background:red;padding:5px 10px;">🗑️</button>
+            style="windth:auto;background:red;padding:5px 10px;">🗑️</button>
             </td>
         </tr>`;
       });
     });
       }
+      //Lógica para Salvar(Novo ou Edição) Acrescentard tudo
+      document.getElementByld('form-cliente').onsubmit=function(e){
+        e.preventDefault(),
+          const id=this.dataset.id;// Verifica sew há um ID guardado para edição
+        const dados= {
+          nome: this.nome.value,
+          cpf: this.cpf.value,
+          telefone: this.telefone.value
+         } PAROU AQUI
+        
    </script>
   </body>
   <footer class="rodape">
