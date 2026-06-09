@@ -51,11 +51,13 @@ db.serialize(() => {
 });
 
 // --- ROTAS DE CLIENTES ---
-app.post('/salvar-cliente', (req, res) => {
+app.put('/alterar-cliente/:id', (req, res) => {
+	const {id}= req.params;
     const { nome, cpf, telefone } = req.body;
-    db.run(INSERT INTO clientes (nome, cpf, telefone) VALUES (?, ?, ?), [nome, cpf, telefone], (err) => {
-        if (err) return res.status(500).send(err.message);
-        res.redirect('/clientes.html');
+	const sql= `UPDATE clientes SET nome= ?,cpf= ?, telefone= ? WHERE id= ?`;
+    db.run(sql,[nome,cpf,telefone,id], (err) => {
+        if (err) return res.status(500).json({error: err.message});
+        res.json({sucess:true});
     });
 });
 
@@ -74,7 +76,13 @@ app.post('/salvar-produto', (req, res) => {
         res.redirect('/produtos.html');
     });
 });
-
+app.delete('/excluir-cliente/:id',(req,res)=>{
+	const{id}=req.params;
+	db.run('DELETE FROM clientes WHERE id= ?', [id], (err)=>{
+ if (err) return res.status(500).json({error:err.message});
+        res.json({sucess:true});
+    });
+});
 app.get('/listar-produtos', (req, res) => {
     db.all("SELECT * FROM produtos", [], (err, rows) => {
         if (err) return res.status(500).json(err);
