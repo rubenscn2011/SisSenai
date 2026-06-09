@@ -86,8 +86,25 @@
       
       // Função para Excluir|Acrescenta tudo
       function excluirCliente(id) {
-        if (confirm("Deseja excluir este cliente?")){ PARAOU QUI
-        
+        if (confirm("Deseja excluir este cliente?")){
+          fetch('/excluir-cliente/${id}`,{method:'DELETE'})
+              .then(() =>carregarClentes());
+        }
+      }
+      // Função para colocar dados no form para Editar| Acrescentar tudo
+      function prepararEdicao(id,nome,cpf,telefone) {
+        const form = document.getEelementByld('form-cliente');
+        form.dataset.id = id;// Guardar o ID  no formulário
+        form.nome.value = nome;
+        form.telefone.value = telefone;
+
+        document.getElementByld('titulo-form').innerText = "Editar Cadastro";
+        const btn = document.getElementByld('btn-salvar');
+        btn.innerText = "Confirmar Alteração";
+        btn.style.background = "orange";
+      }
+
+      carregarCliente();     
    </script>
   </body>
   <footer class="rodape">
