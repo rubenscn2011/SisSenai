@@ -72,7 +72,17 @@
           nome: this.nome.value,
           cpf: this.cpf.value,
           telefone: this.telefone.value
-         } PAROU AQUI
+         }
+        const url=id ?'PUT':'POST';
+        fetch(url,{
+          method:metodo,
+          headers: {'Content-Type':'application/json'},
+          body:JSON.stringify(dados)
+        }).then(()=>{
+          alert(id ?"Cliente alterado!" :"Cliente salvo!");
+          location.reloand();
+        });
+      };
         
    </script>
   </body>
