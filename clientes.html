@@ -46,9 +46,9 @@
     <script>
       fetch('/listar-clientes')
       .then(res=>res.json())
-      .then(clientes=>{
+      .then(clientes=> {
         const corpoTabela=document.getElementByld('list-clientes');
-        clientes.forEach(c=>{
+        clientes.forEach(c=> {
           corpoTabela.innerHTML +=`
             <tr>
             <td>${c.nome}</td>
@@ -65,7 +65,7 @@
     });
       }
       //Lógica para Salvar(Novo ou Edição) Acrescentard tudo
-      document.getElementByld('form-cliente').onsubmit=function(e){
+      document.getElementByld('form-cliente').onsubmit=function(e) {
         e.preventDefault(),
           const id=this.dataset.id;// Verifica sew há um ID guardado para edição
         const dados= {
@@ -86,7 +86,7 @@
       
       // Função para Excluir|Acrescenta tudo
       function excluirCliente(id) {
-        if (confirm("Deseja excluir este cliente?")){
+        if (confirm("Deseja excluir este cliente?")) {
           fetch('/excluir-cliente/${id}`,{method:'DELETE'})
               .then(() =>carregarClentes());
         }
