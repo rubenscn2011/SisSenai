@@ -1,162 +1,133 @@
-// --- ROTAS DE CLIENTES ---const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
-const bodyParser = require('body-parser');
-const app = express();
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="estilo.css">
+    <title>SisSenai - Lançar Venda</title>
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="clientes.html">Clientes</a>
+        <a href="produtos.html">Estoque</a>
+        <a href="vendas.html">Vendas</a>
+        <a href="consulta_vendas.html">Consulta</a>
+    </nav>
 
-// Configurações do Servidor
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.json()); // Necessário para o carrinho de compras (JSON)
-app.use(express.static('.')); // Serve seus arquivos HTML, CSS e imagens
+    <header class="banner">
+        <h1>Controle de Vendas</h1>
+        <p>Cadastre novas vendas no sistema</p>
+    </header>
 
-// Conexão com o Banco de Dados
-const db = new sqlite3.Database('./sissenai.db');
+    <div class="container">
+        <div style="margin-bottom: 20px;">
+            <button onclick="window.location.href='consulta_vendas.html'" style="background: #555; width: auto; padding: 10px 20px;">
+                🔍 Ver Histórico e Detalhes de Vendas
+            </button>
+        </div>
 
-// Inicialização das Tabelas (Cria apenas se não existirem)
-db.serialize(() => {
-    // Tabela de Clientes
-    db.run(`CREATE TABLE IF NOT EXISTS clientes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        nome TEXT, 
-        cpf TEXT, 
-        telefone TEXT
-    )`);
+        <div class="card">
+            <h2>Nova Venda / Orçamento</h2>
 
-    // Tabela de Produtos (Estoque)
-    db.run(`CREATE TABLE IF NOT EXISTS produtos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        descricao TEXT, 
-        preco REAL, 
-        estoque INTEGER
-    )`);
+            <label>Cliente:</label>
+            <select id="selCliente">
+                <option value="">Selecione o Cliente...</option>
+            </select>
 
-    // Tabela Mestre de Vendas
-    db.run(`CREATE TABLE IF NOT EXISTS vendas (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        cliente_id INTEGER, 
-        data TEXT, 
-        total REAL, 
-        FOREIGN KEY (cliente_id) REFERENCES clientes (id)
-    )`);
+            <label>Produto:</label>
+            <select id="selProduto">
+                <option value="">Selecione o Produto...</option>
+            </select>
 
-    // Tabela Detalhe de Itens da Venda
-    db.run(`CREATE TABLE IF NOT EXISTS itens_venda (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        venda_id INTEGER, 
-        produto_id INTEGER, 
-        quantidade INTEGER, 
-        preco_unitario REAL, 
-        FOREIGN KEY (venda_id) REFERENCES vendas (id), 
-        FOREIGN KEY (produto_id) REFERENCES produtos (id)
-    )`);
-});
+            <label>Quantidade:</label>
+            <input type="number" id="inpQtd" value="1" min="1">
 
+            <button onclick="adicionarItem()">Adicionar Item</button>
 
-app.post('/salvar-cliente', (req, res) => {
-    const { nome, cpf, telefone } = req.body;
-    db.run(`INSERT INTO clientes (nome, cpf, telefone) VALUES (?, ?, ?)`, [nome, cpf, telefone], (err) => {
-        if (err) return res.status(500).send(err.message);
-        res.redirect('/clientes.html');
-    });
-});
+            <table id="tabelaItens">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Qtd</th>
+                        <th>Preço Unit.</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
 
-app.get('/listar-clientes', (req, res) => {
-    db.all("SELECT * FROM clientes", [], (err, rows) => {
-        if (err) return res.status(500).json(err);
-        res.json(rows);
-    });
-});
+            <h3 id="txtTotal">Total: R$ 0,00</h3>
+            <button onclick="finalizarVenda()" style="background: green;">Finalizar Venda</button>
+        </div>
+    </div>
 
-// --- ROTAS DE PRODUTOS (ESTOQUE) ---
-app.post('/salvar-produto', (req, res) => {
-    const { descricao, preco, estoque } = req.body;
-    db.run(`INSERT INTO produtos (descricao, preco, estoque) VALUES (?, ?, ?)`, [descricao, preco, estoque], (err) => {
-        if (err) return res.status(500).send(err.message);
-        res.redirect('/produtos.html');
-    });
-});
+    <script>
+        let carrinho = [];
+        let totalGeral = 0;
+        window.listaProdutos = [];
 
-app.get('/listar-produtos', (req, res) => {
-    db.all("SELECT * FROM produtos", [], (err, rows) => {
-        if (err) return res.status(500).json(err);
-        res.json(rows);
-    });
-});
+        window.onload = () => {
+            fetch('/listar-clientes').then(res => res.json()).then(data => {
+                const selC = document.getElementById('selCliente');
+                data.forEach(c => selC.innerHTML += `<option value="${c.id}">${c.nome}</option>`);
+            });
 
-// --- ROTAS DE VENDAS ---
+            fetch('/listar-produtos').then(res => res.json()).then(data => {
+                window.listaProdutos = data;
+                const selP = document.getElementById('selProduto');
+                data.forEach(p => selP.innerHTML += `<option value="${p.id}">${p.descricao} - R$ ${p.preco.toFixed(2)}</option>`);
+            });
+        };
 
-// Finalizar Venda (Grava Mestre e Detalhes)
-app.post('/finalizar-venda', (req, res) => {
-    const { cliente_id, total, itens } = req.body;
-    const data = new Date().toLocaleString('pt-BR');
+        function adicionarItem() {
+            const pId = parseInt(document.getElementById('selProduto').value);
+            const qtd = parseInt(document.getElementById('inpQtd').value);
+            const produto = window.listaProdutos.find(p => p.id === pId);
 
-    db.run(`INSERT INTO vendas (cliente_id, data, total) VALUES (?, ?, ?)`, [cliente_id, data, total], function (err) {
-        if (err) return res.status(500).json(err);
+            if (produto) {
+                const subtotal = produto.preco * qtd;
+                carrinho.push({ id: produto.id, desc: produto.descricao, preco: produto.preco, qtd: qtd });
+                totalGeral += subtotal;
+                atualizarGrade();
+            } else {
+                alert("Selecione um produto!");
+            }
+        }
 
-        const vendaId = this.lastID;
-        const stmt = db.prepare(`INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)`);
+        function atualizarGrade() {
+            const corpo = document.querySelector('#tabelaItens tbody');
+            corpo.innerHTML = "";
+            carrinho.forEach(item => {
+                corpo.innerHTML += `<tr><td>${item.desc}</td><td>${item.qtd}</td><td>R$ ${item.preco.toFixed(2)}</td><td>R$ ${(item.qtd * item.preco).toFixed(2)}</td></tr>`;
+            });
+            document.getElementById('txtTotal').innerText = `Total: R$ ${totalGeral.toFixed(2)}`;
+        }
 
-        //itens.forEach(item => {
-        //    stmt.run(vendaId, item.id, item.qtd, item.preco);
-        //});
-	itens.forEach(item => {
+        function finalizarVenda() {
+            const cId = document.getElementById('selCliente').value;
+            if (!cId || carrinho.length === 0) return alert("Selecione cliente e itens!");
 
-    		// Grava item da venda
-    		stmt.run(
-        	vendaId,
-        	item.id,
-        	item.qtd,
-        	item.preco
-    		);
+            const dadosVenda = { cliente_id: cId, total: totalGeral, itens: carrinho };
 
-    // Baixa estoque
-    	db.run(
-        	`
-        	UPDATE produtos
-        	SET estoque = estoque - ?
-        	WHERE id = ?
-        	`,
-        	[item.qtd, item.id]
-   	 	);
-	});
-
-
-        stmt.finalize();
-        res.json({ success: true });
-    	});
-	});
-
-// Listar todas as Vendas (Mestre)
-app.get('/listar-vendas', (req, res) => {
-    const sql = `
-        SELECT v.id, v.data, v.total, c.nome as nome_cliente 
-        FROM vendas v 
-        INNER JOIN clientes c ON v.cliente_id = c.id 
-        ORDER BY v.id DESC`;
-    db.all(sql, [], (err, rows) => {
-        if (err) return res.status(500).json(err);
-        res.json(rows);
-    });
-});
-
-// Listar itens de uma venda específica (Detalhe)
-app.get('/detalhes-venda/:id', (req, res) => {
-    const { id } = req.params;
-    const sql = `
-        SELECT i.*, p.descricao 
-        FROM itens_venda i 
-        INNER JOIN produtos p ON i.produto_id = p.id 
-        WHERE i.venda_id = ?`;
-
-    db.all(sql, [id], (err, rows) => {
-        if (err) return res.status(500).json(err);
-        res.json(rows);
-    });
-});
-
-// Iniciar Servidor
-const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`=========================================`);
-    console.log(`SISSENAI RODANDO EM: http://localhost:${PORT}`);
-    console.log(`=========================================`);
-});
+            fetch('/finalizar-venda', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dadosVenda)
+            })
+                .then(res => res.json())
+                .then(resposta => {
+                    if (resposta.success) {
+                        alert('Venda registrada com sucesso!');
+                        window.location.href = 'consulta_vendas.html'; // Vai direto para a consulta após vender
+                    }
+                });
+        }
+    </script>
+</body>
+<footer class="rodape">
+    <div class="container-rodape">
+        <p>&copy; 2026 SisSenai - Sistema de Gestão Educacional</p>
+        <p>Desenvolvido para fins didáticos - Unidade SENAI Capanema/PR</p>
+    </div>
+</footer>
+</html>
