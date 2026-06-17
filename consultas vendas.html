@@ -41,63 +41,47 @@
         </div>
     </div>
 
-    <footer class="rodape">
-        <div class="container-rodape">
-            <p>&copy; 2026 SisSenai - Sistema de Gestão Educacional</p>
-            <p>Desenvolvido para fins didáticos - Unidade SENAI Capanema/PR</p>
-        </div>
-    </footer>
-
     <script>
         window.onload = () => {
-            fetch('/listar-vendas')
-                .then(res => res.json())
-                .then(vendas => {
-                    const corpo = document.getElementById('lista-vendas-consulta');
-                    // Cria todas as linhas na memória primeiro (melhor performance)
-                    const linhas = vendas.map(v => `
-                        <tr>
-                            <td>${v.id}</td>
-                            <td>${v.data}</td>
-                            <td>${v.nome_cliente}</td>
-                            <td>R$ ${Number(v.total).toFixed(2)}</td>
-                            <td><button onclick="verDetalhes(${v.id})" style="padding:5px; cursor:pointer;">Ver Itens</button></td>
-                        </tr>
-                    `).join('');
-                    corpo.innerHTML = linhas;
-                })
-                .catch(err => console.error("Erro ao listar vendas:", err));
+            fetch('/listar-vendas').then(res => res.json()).then(vendas => {
+                const corpo = document.getElementById('lista-vendas-consulta');
+                vendas.forEach(v => {
+                    corpo.innerHTML += `
+                            <tr>
+                                <td>${v.id}</td>
+                                <td>${v.data}</td>
+                                <td>${v.nome_cliente}</td>
+                                <td>R$ ${v.total.toFixed(2)}</td>
+                                <td><button onclick="verDetalhes(${v.id})" style="padding:5px">Ver Itens</button></td>
+                            </tr>`;
+                });
+            });
         };
 
         function verDetalhes(idVenda) {
-            fetch(`/detalhes-venda/${idVenda}`)
-                .then(res => res.json())
-                .then(itens => {
-                    document.getElementById('card-detalhes').style.display = 'block';
-                    document.getElementById('num-venda').innerText = idVenda;
-                    const corpo = document.getElementById('lista-itens-detalhe');
-                    
-                    // Renderiza os itens de forma otimizada
-                    const linhasItens = itens.map(item => {
-                        const qtd = Number(item.quantidade);
-                        const preco = Number(item.preco_unitario);
-                        const subtotal = qtd * preco;
-                        
-                        return `
+            fetch(`/detalhes-venda/${idVenda}`).then(res => res.json()).then(itens => {
+                document.getElementById('card-detalhes').style.display = 'block';
+                document.getElementById('num-venda').innerText = idVenda;
+                const corpo = document.getElementById('lista-itens-detalhe');
+                corpo.innerHTML = "";
+                itens.forEach(item => {
+                    corpo.innerHTML += `
                             <tr>
                                 <td>${item.descricao}</td>
-                                <td>${qtd}</td>
-                                <td>R$ ${preco.toFixed(2)}</td>
-                                <td>R$ ${subtotal.toFixed(2)}</td>
-                            </tr>
-                        `;
-                    }).join('');
-                    
-                    corpo.innerHTML = linhasItens;
-                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-                })
-                .catch(err => console.error("Erro ao buscar detalhes:", err));
+                                <td>${item.quantidade}</td>
+                                <td>R$ ${item.preco_unitario.toFixed(2)}</td>
+                                <td>R$ ${(item.quantidade * item.preco_unitario).toFixed(2)}</td>
+                            </tr>`;
+                });
+                window.scrollTo(0, document.body.scrollHeight);
+            });
         }
     </script>
 </body>
+<footer class="rodape">
+    <div class="container-rodape">
+        <p>&copy; 2026 SisSenai - Sistema de Gestão Educacional</p>
+        <p>Desenvolvido para fins didáticos - Unidade SENAI Capanema/PR</p>
+    </div>
+</footer>
 </html>
